@@ -162,10 +162,16 @@ void embeddedWoT_CoAP::exposeProperties(const String *endpoints, properties_hand
     // this->properties_number = prop_num;
     int i = 0;
     for(i = 0; i < prop_num; i++) {
+        const char* endpoint = endpoints[i].c_str();
+        if (endpoint[0] == '/') {
+            endpoint++;
+        }
+        Serial.printf("CoAP endpoint exposed: %s\n", endpoint);
         this->coap.server([this, callbacks, i] (CoapPacket &packet, IPAddress ip, int port) {
             String resp = callbacks[i]();
+            Serial.printf("Responding to coap %s port %d\n", resp.c_str(), port);
             this->coap.sendResponse(ip, port, packet.messageid, resp.c_str());
-        }, endpoints[i]);
+        }, endpoint);
     }
 }
 
