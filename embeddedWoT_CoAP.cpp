@@ -6,9 +6,16 @@ embeddedWoT_CoAP::embeddedWoT_CoAP(int port): port(port), ac_doc(2000), ia_doc(1
     // events data
     ipe_arr = ipe_doc.createNestedArray("clients_list");
     ipia_arr = ipia_doc.createNestedArray("clients_list");
-    
-    //begin CoAP
-    this->coap.start();
+
+    this->coap.response([] (CoapPacket &packet, IPAddress ip, int port) {
+        Serial.print("Coap Response got: ");
+        
+        char p[packet.payloadlen + 1];
+        memcpy(p, packet.payload, packet.payloadlen);
+        p[packet.payloadlen] = NULL;
+        
+        Serial.println(p);
+    });
 }
 
 void embeddedWoT_CoAP::sendCoAPTXT(String txt, String event_endpoint) {
@@ -30,6 +37,10 @@ void embeddedWoT_CoAP::sendCoAPTXT(String txt, String event_endpoint) {
 
 void embeddedWoT_CoAP::loop() {
     this->coap.loop();
+}
+
+void embeddedWoT_CoAP::start() {
+    this->coap.start();
 }
 
 void embeddedWoT_CoAP::test() {

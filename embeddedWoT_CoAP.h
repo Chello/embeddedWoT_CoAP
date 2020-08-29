@@ -34,6 +34,11 @@ class embeddedWoT_CoAP {
          */
         void loop();
 
+        /**
+         * Starts the CoAP for accepting requests.
+         */
+        void start();
+
         void test();
 
         /**
