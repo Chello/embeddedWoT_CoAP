@@ -99,7 +99,7 @@ class embeddedWoT_CoAP {
         void _clientDisconnect(uint8_t num, uint8_t* pl);
         void _clientConnect(uint8_t num, uint8_t* pl, size_t length);
         void _clientText(uint8_t num, uint8_t* pl, size_t length);
-        bool _setEventHandled(String ip_s, int num);
+        bool _setEventHandled(String ip_s, int num, int endpoint_number);
         bool _setIAHandled(String ip_s, int num, String endpoint);
         // document to handle Interaction Affordances CoAP requests
         DynamicJsonDocument ia_doc;

@@ -19,10 +19,12 @@ embeddedWoT_CoAP::embeddedWoT_CoAP(int port): port(port), ac_doc(2000), ia_doc(1
 }
 
 void embeddedWoT_CoAP::sendCoAPTXT(String txt, String event_endpoint) {
+    Serial.println("sendCoAPTXT() called");
     for(i = 0; i < ipe_arr.size(); i++) {
         String ws_ip = ipe_arr[i]["ip"];
         int messageid = ipe_arr[i]["num"];
         JsonArray ae = e_doc[ws_ip];
+        serializeJsonPretty(ae, Serial);
         Serial.printf("Sending CoAP string %s. Triggered event %s. Sending to ip %s\n", txt.c_str(), event_endpoint.c_str(), ws_ip.c_str());
         for(j = 0; j < ae.size(); j++) {
             if(!ae[j][event_endpoint.c_str()].isNull() && ae[j][event_endpoint.c_str()]) {
@@ -48,7 +50,7 @@ void embeddedWoT_CoAP::test() {
     Serial.printf("Nel test %s\n", this->events_endpoint[0].c_str());
 }
 
-bool embeddedWoT_CoAP::_setEventHandled(String ip_s, int num) {
+bool embeddedWoT_CoAP::_setEventHandled(String ip_s, int num, int endpoint_number) {
     bool done = false; 
     bool conn = false;
     JsonObject obj_e;
@@ -67,7 +69,7 @@ bool embeddedWoT_CoAP::_setEventHandled(String ip_s, int num) {
     else {
         Serial.println("!isNull()");
         for(j = 0; !conn && j<e_doc[ip_s].size(); j++) {
-            if(!e_doc[ip_s][j][events_endpoint[this->i]].isNull())
+            if(!e_doc[ip_s][j][events_endpoint[endpoint_number]].isNull())
                 conn = true;    
         }
         if(!conn)
@@ -87,10 +89,10 @@ bool embeddedWoT_CoAP::_setEventHandled(String ip_s, int num) {
         coap.sendResponse(ip, this->port, num, "Connection confirmed - event accomplished");
         Serial.printf("Pack inviato, hasbs: %s\n", this->hasSubscriptionSchema ? "true" : "false");
         if(this->hasSubscriptionSchema && this->events_subscriptionSchema[i]) 
-            obj_e[events_endpoint[this->i]] = false;
+            obj_e[events_endpoint[endpoint_number]] = false;
         else {
-            Serial.printf("Quindi finisco qua, i: %d\n", this->i);
-            obj_e[events_endpoint[this->i]] = true;  
+            Serial.printf("Quindi finisco qua, i: %d\n", endpoint_number);
+            obj_e[events_endpoint[endpoint_number]] = true;  
             Serial.println("Provo ad inviare il pack subconf");
             coap.sendResponse(ip, this->port, num, "Subscription confirmed");  
             Serial.println("Pack inviato");
@@ -226,22 +228,22 @@ void embeddedWoT_CoAP::exposeEvents(const String *endpoints, int evt_num) {
 
     this->events_number = evt_num;
     //Serial.printf("Events endpoint 0 is %s\n", this->events_endpoint[0].c_str());
-
-    for(this->i = 0; this->i < evt_num; this->i++) {
+    int i = 0;
+    for(i = 0; i < evt_num; i++) {
         const char* endpoint = endpoints[i].c_str();
         //delete the first slash from the endpoint
         if (endpoint[0] == '/') {
             endpoint++;
         }
 
-        this->coap.server([this] (CoapPacket &packet, IPAddress ip, int port) {
+        this->coap.server([this, i] (CoapPacket &packet, IPAddress ip, int port) {
             // decode response
             char p[packet.payloadlen + 1];
             memcpy(p, packet.payload, packet.payloadlen);
             p[packet.payloadlen] = NULL;
             Serial.println("Fino qui non dovrebbero esserci problemi");
             
-            this->_setEventHandled(ip.toString(), packet.messageid);
+            this->_setEventHandled(ip.toString(), packet.messageid, i);
             // String message(p);
 
             // String resp = callbacks[i](message);
