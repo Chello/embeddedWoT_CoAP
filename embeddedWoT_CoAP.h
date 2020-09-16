@@ -122,6 +122,9 @@ class embeddedWoT_CoAP {
         // UDP Wifi object
         WiFiUDP udp;
 
+        //This variable is set to true if a subscription schema is defined
+        bool hasSubscriptionSchema;
+
         //on i position contains true if i event requires subscription
         bool events_subscriptionSchema[];
         //on i position contains true if i event requires cancellation
