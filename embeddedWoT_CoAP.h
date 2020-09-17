@@ -39,8 +39,6 @@ class embeddedWoT_CoAP {
          */
         void start();
 
-        void test();
-
         /**
          * Binds the event schema for subscriptions and/or events_cancellations.
          * The document should have the following form:
